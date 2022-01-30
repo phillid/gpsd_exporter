@@ -165,17 +165,11 @@ func (gc GPSDCollector) Collect(ch chan<- prometheus.Metric) {
 	for _, sat := range gc.lastSky.Satellites {
 		labels := []string{device, fmt.Sprint(sat.PRN)}
 
-		// Handle oddball metrics first
+		// float64-ify the bool metric to conform with the rest
 		usedFloat := float64(0)
 		if sat.Used {
 			usedFloat = 1
 		}
-		ch <- prometheus.MustNewConstMetric(
-			gc.SatelliteUsed,
-			prometheus.GaugeValue,
-			usedFloat,
-			labels...,
-		)
 
 		// Handle optional float64 gauges in bulk
 		optionalGauges := map[*prometheus.Desc]*float64{
@@ -187,6 +181,7 @@ func (gc GPSDCollector) Collect(ch chan<- prometheus.Metric) {
 			gc.SatelliteSigID:             sat.SigID,
 			gc.SatelliteFreqID:            sat.FreqID,
 			gc.SatelliteHealth:            sat.Health,
+			gc.SatelliteUsed:              &usedFloat,
 		}
 		for desc, valuePointer := range optionalGauges {
 			// Nil indicates an optional field that was missing on the wire
