@@ -42,7 +42,7 @@ type GPSDReportSky struct {
 // TPV: "time-position-velocity report"
 type GPSDReportTPV struct {
 	Device    *string  `json:"device"`
-	Mode      float64 `json:"mode"`
+	Mode      *float64 `json:"mode"`
 	Status    *float64 `json:"status"`
 	Latitude  *float64 `json:"lat"`
 	Longitude *float64 `json:"lon"`
