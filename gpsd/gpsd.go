@@ -1,14 +1,14 @@
 package gpsd
 
 import (
-	"net"
-	"encoding/json"
 	"bufio"
+	"encoding/json"
 	"log"
+	"net"
 )
 
 type GPSD struct {
-	conn net.Conn
+	conn   net.Conn
 	reader *bufio.Reader
 
 	versionCallback func(GPSDReportVersion)
@@ -29,12 +29,12 @@ type GPSDReportVersion struct {
 	Rev         string  `json:"rev"`
 	Proto_major float64 `json:"proto_major"`
 	Proto_minor float64 `json:"proto_minor"`
-	Remote      *string  `json:"remote"`
+	Remote      *string `json:"remote"`
 }
 
 // SKY: "sky view of the GPS satellite positions"
 type GPSDReportSky struct {
-	Device *string  `json:"device"`
+	Device *string `json:"device"`
 	// fields not used have been omitted
 	Satellites []GPSDSatellite `json:"satellites"`
 }
@@ -51,7 +51,7 @@ type GPSDReportTPV struct {
 
 // data types found inside Reports
 type GPSDSatellite struct {
-	PRN       float64 `json:"PRN"`
+	PRN       float64  `json:"PRN"`
 	Azimuth   *float64 `json:"az"`
 	Elevation *float64 `json:"el"`
 	SNR       *float64 `json:"ss"`
@@ -60,13 +60,13 @@ type GPSDSatellite struct {
 	SigID     *float64 `json:"sigid"`
 	FreqID    *float64 `json:"freqid"`
 	Health    *float64 `json:"health"`
-	Used      bool    `json:"used"`
+	Used      bool     `json:"used"`
 }
 
 func Dial(address string) (gpsd GPSD, err error) {
 	conn, err := net.Dial("tcp", address)
 	gpsd = GPSD{
-		conn: conn,
+		conn:   conn,
 		reader: bufio.NewReader(conn),
 	}
 	return
@@ -79,7 +79,7 @@ func (gpsd GPSD) processNext() (err error) {
 		var genericReport GPSDReportGeneric
 		err = json.Unmarshal(rawReport, &genericReport)
 		if err == nil {
-			switch class := genericReport.Class ; class {
+			switch class := genericReport.Class; class {
 			case "VERSION":
 				if callback := gpsd.versionCallback; callback != nil {
 					var versionReport GPSDReportVersion

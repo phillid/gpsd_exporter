@@ -1,23 +1,23 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
-	"flag"
 	"sync"
-	"fmt"
 
+	"github.com/phillid/gpsd_exporter/gpsd"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/phillid/gpsd_exporter/gpsd"
 )
 
 type GPSDCollector struct {
 	mu sync.Mutex
 	// FIXME split on device
 	// FIXME expire when stale
-	lastTPV gpsd.GPSDReportTPV
-	lastSky gpsd.GPSDReportSky
+	lastTPV        gpsd.GPSDReportTPV
+	lastSky        gpsd.GPSDReportSky
 	skyMetricDescs map[string]*prometheus.Desc
 
 	// Per-satellite data
@@ -143,11 +143,11 @@ func (gc GPSDCollector) Collect(ch chan<- prometheus.Metric) {
 
 	tpv := gc.lastTPV
 	optionalGauges := map[*prometheus.Desc]*float64{
-		gc.FixLatitudeDegrees : tpv.Latitude,
+		gc.FixLatitudeDegrees:  tpv.Latitude,
 		gc.FixLongitudeDegrees: tpv.Longitude,
-		gc.FixAltitudeMeters  : tpv.Altitude,
-		gc.FixMode            : tpv.Mode,
-		gc.FixStatus          : tpv.Status,
+		gc.FixAltitudeMeters:   tpv.Altitude,
+		gc.FixMode:             tpv.Mode,
+		gc.FixStatus:           tpv.Status,
 	}
 
 	for desc, valuePointer := range optionalGauges {
@@ -167,7 +167,7 @@ func (gc GPSDCollector) Collect(ch chan<- prometheus.Metric) {
 
 		// Handle oddball metrics first
 		usedFloat := float64(0)
-		if (sat.Used) {
+		if sat.Used {
 			usedFloat = 1
 		}
 		ch <- prometheus.MustNewConstMetric(
@@ -179,14 +179,14 @@ func (gc GPSDCollector) Collect(ch chan<- prometheus.Metric) {
 
 		// Handle optional float64 gauges in bulk
 		optionalGauges := map[*prometheus.Desc]*float64{
-			gc.SatelliteAzimuthDegrees   : sat.Azimuth,
-			gc.SatelliteElevationDegrees : sat.Elevation,
+			gc.SatelliteAzimuthDegrees:    sat.Azimuth,
+			gc.SatelliteElevationDegrees:  sat.Elevation,
 			gc.SatelliteSignalToNoiseDBHZ: sat.SNR,
-			gc.SatelliteGNSSID           : sat.GNSSID,
-			gc.SatelliteSVID             : sat.SVID,
-			gc.SatelliteSigID            : sat.SigID,
-			gc.SatelliteFreqID           : sat.FreqID,
-			gc.SatelliteHealth           : sat.Health,
+			gc.SatelliteGNSSID:            sat.GNSSID,
+			gc.SatelliteSVID:              sat.SVID,
+			gc.SatelliteSigID:             sat.SigID,
+			gc.SatelliteFreqID:            sat.FreqID,
+			gc.SatelliteHealth:            sat.Health,
 		}
 		for desc, valuePointer := range optionalGauges {
 			// Nil indicates an optional field that was missing on the wire
@@ -217,9 +217,9 @@ func (gc *GPSDCollector) SetLatestSky(r gpsd.GPSDReportSky) {
 }
 
 var (
-	metricsPath = flag.String("metrics-path", "/metrics", "HTTP path for the metrics endpoint")
+	metricsPath   = flag.String("metrics-path", "/metrics", "HTTP path for the metrics endpoint")
 	listenAddress = flag.String("listen-address", ":9477", "Address to listen on for HTTP requests")
-	gpsdAddress = flag.String("gpsd-address", ":2947", "Address of gpsd server")
+	gpsdAddress   = flag.String("gpsd-address", ":2947", "Address of gpsd server")
 )
 
 func main() {
@@ -231,7 +231,6 @@ func main() {
 		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
 		//prometheus.NewGoCollector(),
 		gpsdCollector,
-
 	)
 
 	// FIXME propagate gpsd session exit to http thread
