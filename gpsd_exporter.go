@@ -10,13 +10,13 @@ import (
 	"github.com/phillid/gpsd_exporter/gpsd"
 )
 
-type GPSdCollector struct {}
+type GPSDCollector struct {}
 
-func (gc GPSdCollector) Describe(ch chan<- *prometheus.Desc) {
+func (gc GPSDCollector) Describe(ch chan<- *prometheus.Desc) {
 	prometheus.DescribeByCollect(gc, ch)
 }
 
-func (gc GPSdCollector) Collect(ch chan<- prometheus.Metric) {
+func (gc GPSDCollector) Collect(ch chan<- prometheus.Metric) {
 	desc := prometheus.NewDesc(
 		"gpsd_satellite_bloobloo_asdf",
 		"Some description here",
@@ -43,7 +43,7 @@ func main() {
 	reg.MustRegister(
 		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
 		//prometheus.NewGoCollector(),
-		GPSdCollector{},
+		GPSDCollector{},
 
 	)
 
@@ -80,7 +80,7 @@ func main() {
 		w.Write([]byte(`<html>
 		<head><title></title></head>
 		<body>
-		<h1>GPSd Exporter</h1>
+		<h1>GPSD Exporter</h1>
 		<p><a href="` + *metricsPath + `">Metrics</a></p>
 		</body></html>`))
 	})
