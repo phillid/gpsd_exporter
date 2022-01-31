@@ -13,7 +13,7 @@ import (
 )
 
 type GPSDCollector struct {
-	mu sync.Mutex
+	mu *sync.Mutex
 	// FIXME split on device
 	// FIXME expire when stale
 	lastTPV        gpsd.GPSDReportTPV
@@ -43,6 +43,7 @@ func NewGPSDCollector() *GPSDCollector {
 	satLabelNames := []string{"device", "prn"}
 	fixLabelNames := []string{"device"}
 	return &GPSDCollector{
+		mu: &sync.Mutex{},
 		SatelliteAzimuthDegrees: prometheus.NewDesc(
 			"gpsd_satellite_azimuth_degrees",
 			"Satellite azimuth in degrees from true north",
